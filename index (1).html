@@ -1,0 +1,256 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diretório Edifício Isis</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #e0e7ff, #f3e8ff);
+      color: #1f2937;
+      padding: 20px;
+      min-height: 100vh;
+    }
+    .header {
+      text-align: center;
+      padding: 20px;
+      background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+      color: white;
+      border-radius: 12px;
+      margin-bottom: 30px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+    .header h1 {
+      font-size: 2.2rem;
+      font-weight: 700;
+    }
+    .header .logo {
+      max-width: 200px;
+      margin-top: 10px;
+    }
+    .header .info {
+      font-size: 0.9rem;
+      margin-top: 10px;
+    }
+    .company-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .company {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .company:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    }
+    .company h3 {
+      font-size: 1.4rem;
+      color: #1e40af;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+    .company p {
+      font-size: 0.95rem;
+      color: #4b5563;
+      margin: 5px 0;
+      line-height: 1.4;
+    }
+    .whatsapp-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 15px;
+      background: linear-gradient(90deg, #25D366, #2ed573);
+      color: white;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+      border-radius: 8px;
+      margin-top: 12px;
+      transition: background 0.3s ease, transform 0.2s ease;
+    }
+    .whatsapp-btn:hover {
+      background: linear-gradient(90deg, #1ebe57, #29c165);
+      transform: scale(1.05);
+    }
+    .whatsapp-btn::before {
+      content: '📞';
+      margin-right: 8px;
+    }
+    .footer {
+      text-align: center;
+      padding: 20px;
+      margin-top: 30px;
+      font-size: 0.9rem;
+      color: #4b5563;
+    }
+    @media (max-width: 600px) {
+      .header h1 {
+        font-size: 1.8rem;
+      }
+      .header .logo {
+        max-width: 150px;
+      }
+      .company {
+        padding: 15px;
+      }
+      .company-list {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Diretório Edifício Isis</h1>
+    <img src="URL_DO_LOGO" alt="Logo CONSTRUENS" class="logo">
+    <div class="info">
+      <p>Idealizado e Realizado por <strong>CONSTRUENS</strong></p>
+      <p>Transformamos Visão em Realidade</p>
+      <p>Serviços: Residencial | Comercial | Reformas</p>
+      <p>Contato: <a href="https://wa.me/5511914310221?text=Olá,%20sobre%20o%20Edifício%20Isis" style="color: white; text-decoration: underline;">11 914-310-221</a></p>
+    </div>
+  </div>
+  <div class="company-list" id="company-list">
+    <div class="company">
+      <div>
+        <h3>Sala 1</h3>
+        <p><strong>Tipo:</strong> Sala Comercial</p>
+        <p><strong>Descrição:</strong> Espaço para serviços profissionais.</p>
+      </div>
+      <a href="https://wa.me/5511999990001?text=Olá,%20estou%20aqui%20no%20prédio.%20Poderia%20me%20atender?" class="whatsapp-btn" target="_blank">Contato via WhatsApp</a>
+    </div>
+    <div class="company">
+      <div>
+        <h3>Sala 2</h3>
+        <p><strong>Tipo:</strong> Sala Comercial</p>
+        <p><strong>Descrição:</strong> Escritório para consultoria e atendimentos.</p>
+      </div>
+      <a href="https://wa.me/5511999990002?text=Olá,%20estou%20aqui%20no%20prédio.%20Poderia%20me%20atender?" class="whatsapp-btn" target="_blank">Contato via WhatsApp</a>
+    </div>
+    <div class="company">
+      <div>
+        <h3>Sala 3</h3>
+        <p><strong>Tipo:</strong> Sala Comercial</p>
+        <p><strong>Descrição:</strong> Ambiente para negócios e reuniões.</p>
+      </div>
+      <a href="https://wa.me/5511999990003?text=Olá,%20estou%20aqui%20no%20prédio.%20Poderia%20me%20atender?" class="whatsapp-btn" target="_blank">Contato via WhatsApp</a>
+    </div>
+    <div class="company">
+      <div>
+        <h3>Sala 4</h3>
+        <p><strong>Tipo:</strong> Sala Comercial</p>
+        <p><strong>Descrição:</strong> Espaço para empresas de serviços.</p>
+      </div>
+      <a href="https://wa.me/5511999990004?text=Olá,%20estou%20aqui%20no%20prédio.%20Poderia%20me%20atender?" class="whatsapp-btn" target="_blank">Contato via WhatsApp</a>
+    </div>
+    <div class="company">
+      <div>
+        <h3>Sala 5</h3>
+        <p><strong>Tipo:</strong> Sala Comercial</p>
+        <p><strong>Descrição:</strong> Sala para atividades comerciais diversas.</p>
+      </div>
+      <a href="https://wa.me/5511999990005?text=Olá,%20estou%20aqui%20no%20prédio.%20Poderia%20me%20atender?" class="whatsapp-btn" target="_blank">Contato via WhatsApp</a>
+    </div>
+    <div class="company">
+      <div>
+        <h3>Sala 6</h3>
+        <p><strong>Tipo:</strong> Salão Comercial</p>
+        <p><strong>Descrição:</strong> Salão para serviços de beleza e estética.</p>
+      </div>
+      <a href="https://wa.me/5511999990006?text=Olá,%20estou%20aqui%20no%20prédio.%20Poderia%20me%20atender?" class="whatsapp-btn" target="_blank">Contato via WhatsApp</a>
+    </div>
+    <div class="company">
+      <div>
+        <h3>Sala 7</h3>
+        <p><strong>Tipo:</strong> Salão Comercial</p>
+        <p><strong>Descrição:</strong> Espaço para tratamentos capilares e maquiagem.</p>
+      </div>
+      <a href="https://wa.me/5511999990007?text=Olá,%20estou%20aqui%20no%20prédio.%20Poderia%20me%20atender?" class="whatsapp-btn" target="_blank">Contato via WhatsApp</a>
+    </div>
+    <div class="company">
+      <div>
+        <h3>Sala 8</h3>
+        <p><strong>Tipo:</strong> Salão Comercial</p>
+        <p><strong>Descrição:</strong> Salão para serviços de estética premium.</p>
+      </div>
+      <a href="https://wa.me/5511999990008?text=Olá,%20estou%20aqui%20no%20prédio.%20Poderia%20me%20atender?" class="whatsapp-btn" target="_blank">Contato via WhatsApp</a>
+    </div>
+    <div class="company">
+      <div>
+        <h3>Sala 9</h3>
+        <p><strong>Tipo:</strong> Salão Comercial</p>
+        <p><strong>Descrição:</strong> Espaço para cuidados pessoais e bem-estar.</p>
+      </div>
+      <a href="https://wa.me/5511999990009?text=Olá,%20estou%20aqui%20no%20prédio.%20Poderia%20me%20atender?" class="whatsapp-btn" target="_blank">Contato via WhatsApp</a>
+    </div>
+    <div class="company">
+      <div>
+        <h3>Sala 10</h3>
+        <p><strong>Tipo:</strong> Administração</p>
+        <p><strong>Descrição:</strong> Gestão e suporte administrativo do edifício.</p>
+      </div>
+      <a href="https://wa.me/5511999990010?text=Olá,%20estou%20aqui%20no%20prédio.%20Poderia%20me%20atender?" class="whatsapp-btn" target="_blank">Contato via WhatsApp</a>
+    </div>
+  </div>
+  <div class="footer">
+    <p>© 2025 CONSTRUENS - Transformando Visão em Realidade | Contato: <a href="https://wa.me/5511914310221?text=Olá,%20sobre%20o%20Edifício%20Isis" style="color: #4b5563; text-decoration: underline;">11 914-310-221</a></p>
+  </div>
+</body>
+</html>
